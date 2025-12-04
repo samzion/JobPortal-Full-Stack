@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 40px;
+    background-color: rgb(167, 194, 201);
+    max-width: 800px;
+    margin: 0 auto;  
+}
+h1{
+    text-align: center;
+    font-family:  'Arial Narrow Bold', sans-serif;
+    letter-spacing: 1px;
+}
+
+button{
+    background-color: aqua;
+}
+hr{
+    margin-bottom: 5px;
+}
+
+.filters{
+    border-style:double;
+    max-width: 100%;
+    text-align: center;
+    margin: 0 auto;  
+
+}
+.job-card {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: #fafafa;
+}
+
+.job-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.job-actions {
+    margin-top: 10px;
+}
+
+.job-actions button {
+    cursor: pointer;
+    margin-right: 10px;
+    padding: 6px 12px;
+    border-radius: 5px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+}
+
+.job-actions button:hover {
+    opacity: 0.8;
+}
+.description {
+    display: none;
+    margin-top: 10px;
+}
+
+.like-btn, .dislike-btn {
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;   /* <-- pushes buttons to opposite sides */
+    max-width: 800px;
+    margin: 20px auto;
+}
+
+.pagination button {
+    padding: 10px 20px;
+    background-color: aqua;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+
+#add-new-job {
+    max-width: 500px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+}
+
+#add-new-job form input,
+#add-new-job form select,
+#add-new-job form textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 15px 0;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+#add-new-job button {
+    width: 100%;
+    padding: 12px;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
