@@ -1,5 +1,6 @@
 package com.samson.jobfinder.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -23,5 +24,6 @@ public class JobCategory {
 
     // One category has many jobs
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
+    @JsonIgnore
     private List<Job> jobs = new ArrayList<>();
 }
