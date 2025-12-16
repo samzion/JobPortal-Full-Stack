@@ -3,6 +3,8 @@ package com.samson.jobfinder.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,19 +17,21 @@ public class Job {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "title", nullable = false, length = 100)
+    @Column(name= "description",columnDefinition = "text")
+    private String description;
+
+    @Column(name= "title",columnDefinition = "varchar(100)")
     private String title;
 
-    @Column(name = "short_description")
-    private String shortDescription;
-
-    @Column(name = "full_description", columnDefinition = "TEXT")
-    private String fullDescription;
+    @Column(name="company",columnDefinition = "varchar(100)")
+    private String company;
 
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private JobCategory category;
 
-    private int likes;
-    private int dislikes;
+    @Column(name= "created_on")
+    private LocalDateTime createOn;
+    @Column(name= "updated_on")
+    private LocalDateTime updatedOn;
 }

@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class JobDto {
+
     private Long id;
     private String title;
+    private String description;
     private String company;
-    private String shortDescription;
-    private String fullDescription;
-    private String category;
-    private int likes;
-    private int dislikes;
+    private Integer categoryId;
+
+
 }

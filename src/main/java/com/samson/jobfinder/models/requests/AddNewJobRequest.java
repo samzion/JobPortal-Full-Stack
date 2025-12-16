@@ -9,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddNewJobRequest {
+    public String company;
     @NonNull
     private String title;
     @NonNull

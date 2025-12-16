@@ -8,6 +8,7 @@
     <include file="001-create-categories-table.sql" relativeToChangelogFile="true"/>
     <include file="002-create-jobs-table.sql" relativeToChangelogFile="true"/>
     <include file="003-create-job_votes-table.sql" relativeToChangelogFile="true"/>
-    <include file="004-insert-job-categories-table.sql" relativeToChangelogFile="true"/>
+    <include file="004-insert-job-categories.sql" relativeToChangelogFile="true"/>
+    <include file="005-insert-jobs.sql" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
