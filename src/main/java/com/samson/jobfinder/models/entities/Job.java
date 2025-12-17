@@ -2,6 +2,8 @@ package com.samson.jobfinder.models.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -30,8 +32,37 @@ public class Job {
     @JoinColumn(name = "category_id", nullable = false)
     private JobCategory category;
 
-    @Column(name= "created_on")
+    @Column(name= "likes", nullable = false)
+    private int likes = 0; // Initialize
+
+    @Column(name= "dislikes", nullable = false)
+    private int dislikes = 0; // Initialize
+
+    @Column(name= "created_on", nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime createOn;
-    @Column(name= "updated_on")
+
+    @Column(name= "updated_on", nullable = false)
+    @UpdateTimestamp // Update automatically on every save/flush
     private LocalDateTime updatedOn;
+
+    public void incrementLikes() {
+        this.likes++;
+    }
+
+    public void decrementLikes() {
+        if (this.likes > 0) {
+            this.likes--;
+        }
+    }
+
+    public void incrementDislikes() {
+        this.dislikes++;
+    }
+
+    public void decrementDislikes() {
+        if (this.dislikes > 0) {
+            this.dislikes--;
+        }
+    }
 }
