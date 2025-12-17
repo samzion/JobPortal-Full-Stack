@@ -45,6 +45,15 @@ public class JobController {
         return jobService.fetchJobs(pageable, keyword, categoryName, visitorId);
     }
 
+    @GetMapping ("{jobId}")
+    @CrossOrigin(origins = "*")
+    public  ResponseEntity<?> getJob(
+            @PathVariable Long jobId,
+            @RequestHeader("X-Visitor-ID") String visitorId){
+        JobDto updatedJobDto =jobService.getJob(jobId);
+        return ResponseEntity.ok(updatedJobDto);
+    }
+
     @PostMapping("{jobId}/vote")
     @CrossOrigin(origins = "*")
     public ResponseEntity<JobDto> handleVoteAction(

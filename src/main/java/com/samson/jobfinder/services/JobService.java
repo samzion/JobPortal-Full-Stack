@@ -12,6 +12,7 @@ import com.samson.jobfinder.repositories.JobVoteRepository;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -86,12 +87,6 @@ public class JobService {
             // e.g., "LIKE", "DISLIKE"
             visitorVoteStatus = voteOptional.map(jobVote -> jobVote.getVoteType().name()).orElse(null); // No vote status
         }
-        //compute the total likes and dislikes for job
-        int likes = jobVoteRepository.countByJob_IdAndVoteType(job.getId(), VoteType.LIKE);
-        int dislikes = jobVoteRepository.countByJob_IdAndVoteType(job.getId(), VoteType.DISLIKE);
-
-        job.setLikes(likes);
-        job.setDislikes(dislikes);
         return new JobDto(job, visitorVoteStatus);
     }
 
@@ -153,5 +148,11 @@ public class JobService {
         String updatedStatus = (newVoteType == VoteType.NONE) ? null : newVoteType.name();
 
         return new JobDto(job, updatedStatus);
+    }
+
+    public JobDto getJob(@NonNull Long jobId) {
+        Job job =  jobRepository.findById(jobId).get();
+        return new JobDto(job);
+
     }
 }

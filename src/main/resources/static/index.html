@@ -4,71 +4,197 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Job Listings</title>
-    <link rel="stylesheet" href="styles.css">
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <--link rel="stylesheet" href="styles.css">
+
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .main-content {
+            flex-grow: 1;
+        }
+        /* Custom styling for the image container */
+        .hero-image {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
 </head>
 
 <body>
 
-        <h1>Job Listings</h1>
-        <hr>
-    
-        <!-- Search + Category Filter -->
-        <div class="filters">
-            <input type="text" id="searchInput" placeholder="Search jobs...">
-
-            <select id="jobCategory">
-            </select>
-
-            <button id="searchBtn">Search</button>
-             <button id="addJobBtn" type="button">Add New Job</button>
-
-
-            <!-- Job List Section -->
-            <div id="jobList"></div>
-
-            <!-- Pagination Controls -->
-             <div class="pagination">
-                <button id="prevBtn">Prev</button>
-                <button id="nextBtn">Next</button>
-             </div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#">JobSearch Pro</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#">Home (Listings)</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
         </div>
-            <!-- Add New Job Section -->
-            <div id="add-new-job">
-                <h2>Add New Job</h2>
-                <hr>
+    </div>
+</nav>
 
-                <form id="newJobForm">
-                    <!-- Job Title -->
-                    <label for="jobTitle">Job Title:</label>
-                    <input
-                    type="text"
-                    id="jobTitle"
-                    placeholder="Enter job title"
-                    required>
-                    <label for="jobCategoryAdd">Job Category:</label>
-                    <select id="jobCategoryAdd" required>
-            
-                    </select>
+<div class="hero-image">
+    <img
+            src="images/jobs_istock.jpg"
+            class="img-fluid rounded shadow"
+            alt="Image related to job"
+            style="max-height: 250px; object-fit: cover; width: 100%;">
+</div>
 
-                    <label for="company">Company:</label>
-                    <input
+
+<div class="main-content">
+    <div class="container py-4">
+        <h1 class="mb-4">Job Listings</h1>
+        <hr class="mb-5">
+
+        <div class="row g-3 mb-5">
+            <div class="col-md-5">
+                <input
                         type="text"
-                        id="company"
-                        placeholder="Enter company name"
-                        required>
-
-                    <!-- Job Description -->
-                    <label for="jobDescription">Job Description:</label>
-                    <textarea
-                        id="jobDescription"
-                        placeholder="Enter job description"
-                        required>
-                    </textarea>
-
-                    <!-- Submit button -->
-                    <button type="submit">Add Job</button>
-                </form>
+                        id="searchInput"
+                        class="form-control"
+                        placeholder="Search jobs...">
             </div>
-    <script src="app.js"></script>
+
+            <div class="col-md-3">
+                <select id="jobCategory" class="form-select">
+                    <option value="">Filter by Category</option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex gap-2">
+                <button id="searchBtn" class="btn btn-primary w-50">
+                    <i class="bi bi-search"></i> Search
+                </button>
+                <button id="addJobBtn" type="button" class="btn btn-success w-50">
+                    <i class="bi bi-plus-circle"></i> Add New Job
+                </button>
+            </div>
+        </div>
+
+        <div id="jobList" class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+        </div>
+
+        <div class="pagination d-flex justify-content-center gap-3">
+            <button id="prevBtn" class="btn btn-outline-secondary">
+                &larr; Previous
+            </button>
+            <button id="nextBtn" class="btn btn-outline-secondary">
+                Next &rarr;
+            </button>
+        </div>
+
+        <hr class="my-5">
+
+        <div id="add-new-job" class="p-4 border rounded shadow-lg" >
+            <h2 class="mb-3">Add New Job</h2>
+            <hr class="mb-4">
+
+            <form id="newJobForm">
+                <div class="mb-3">
+                    <label for="jobTitle" class="form-label">Job Title:</label>
+                    <input
+                            type="text"
+                            id="jobTitle"
+                            class="form-control"
+                            placeholder="Enter job title"
+                            required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jobCategoryAdd" class="form-label">Job Category:</label>
+                    <select id="jobCategoryAdd" class="form-select" required>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="company" class="form-label">Company:</label>
+                    <input
+                            type="text"
+                            id="company"
+                            class="form-control"
+                            placeholder="Enter company name"
+                            required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="jobDescription" class="form-label">Job Description:</label>
+                    <textarea
+                            id="jobDescription"
+                            class="form-control"
+                            rows="5"
+                            placeholder="Enter job description"
+                            required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    Submit Job
+                </button>
+                <button type="button" class="btn btn-secondary"  onclick="document.getElementById('add-new-job').style.display='none';">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="jobDetailsModal" tabindex="-1" aria-labelledby="jobDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="jobDetailsModalLabel">
+                    <span id="jobDetailsTitle"></span>
+                    <small class="text-muted" id="jobDetailsCompany"></small>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3" id="jobDetailsCategory">
+                </div>
+                <h6>Job Description</h6>
+                <p id="jobDetailsDescription"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<footer class="footer mt-auto py-3 bg-light border-top">
+    <div class="container text-center">
+            <span class="text-muted">
+                &copy; 2025 Job Listings App | Built with Bootstrap 5, JavaScript and Java/Springboot | Developer(full stack): <b>Samson Kayode</b>
+            </span>
+    </div>
+</footer>
+
+
+<script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous">
+</script>
+
+<script src="app.js"></script>
 </body>
 </html>
