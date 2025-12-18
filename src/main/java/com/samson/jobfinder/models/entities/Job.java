@@ -40,7 +40,7 @@ public class Job {
 
     @Column(name= "created_on", nullable = false, updatable = false)
     @CreationTimestamp
-    private LocalDateTime createOn;
+    private LocalDateTime createdOn;
 
     @Column(name= "updated_on", nullable = false)
     @UpdateTimestamp // Update automatically on every save/flush

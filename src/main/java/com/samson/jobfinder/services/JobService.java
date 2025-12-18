@@ -1,5 +1,6 @@
 package com.samson.jobfinder.services;
 
+import com.samson.jobfinder.models.enums.SortBy;
 import com.samson.jobfinder.models.enums.VoteType;
 import com.samson.jobfinder.models.dtos.JobDto;
 import com.samson.jobfinder.models.entities.Job;
@@ -15,7 +16,9 @@ import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -53,21 +56,40 @@ public class JobService {
     }
 
     public Page<JobDto> fetchJobs(
-            Pageable pageable,
+            int page,
+            int size,
+            @Nullable String sortBy,
             @Nullable String keyword,
             @Nullable String categoryName,
             @Nullable String visitorId
     ) {
         String safeKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
-
+        SortBy safeSortBy; //can only be  date, likes or title
         Integer categoryId = null;
+        Page<Job> jobsPage;
+        Sort sort = Sort.by("createdOn").descending();
+
+        try {
+            safeSortBy = (sortBy == null || sortBy.isBlank()) ? SortBy.date : SortBy.valueOf(sortBy.trim());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid sortBy value: " + sortBy, e);
+        }
+
+
         if (categoryName != null && !categoryName.isBlank()) {
             JobCategory category = jobCategoryRepository.findByNameIgnoreCase(categoryName)
                     .orElseThrow(() -> new EntityNotFoundException("Category not found: " + categoryName));
             categoryId = category.getId();
         }
+
+
+        if (safeSortBy == SortBy.likes){
+            sort = Sort.by("likes").descending();
+        } else if (safeSortBy == SortBy.title) {
+            sort = Sort.by("title").ascending();
+        }
+        Pageable pageable = PageRequest.of(page, size, sort);
         System.out.println("Entering job repository");
-        Page<Job> jobsPage;
         if (safeKeyword == null && categoryId == null) {
             jobsPage = jobRepository.findAll(pageable);
         } else if (safeKeyword == null) {

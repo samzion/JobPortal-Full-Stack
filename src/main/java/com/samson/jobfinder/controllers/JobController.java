@@ -37,12 +37,12 @@ public class JobController {
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) String sortBy,
             @RequestHeader("X-Visitor-ID") String visitorId
     ) {
         System.out.println("Keyword value = " + keyword);
         //System.out.println("Keyword class = " + keyword.getClass().getName());
-        Pageable pageable = PageRequest.of(page, size);
-        return jobService.fetchJobs(pageable, keyword, categoryName, visitorId);
+        return jobService.fetchJobs(page, size, sortBy, keyword, categoryName, visitorId);
     }
 
     @GetMapping ("{jobId}")

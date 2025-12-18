@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -20,6 +22,8 @@ public class JobDto {
     private String visitorVoteStatus;
     private int likes;
     private int dislikes;
+    private LocalDateTime createdOn;
+    private LocalDateTime updatedOn;
 
 
     public JobDto(Job job, String visitorVoteStatus) {
@@ -31,6 +35,7 @@ public class JobDto {
         this.visitorVoteStatus = visitorVoteStatus;
         this.likes = job.getLikes();
         this.dislikes = job.getDislikes();
+        this.createdOn=job.getCreatedOn();
     }
 
 
@@ -40,5 +45,6 @@ public class JobDto {
         this.description = job.getDescription();
         this.company =  job.getCompany();
         this.categoryId =  job.getCategory().getId();
+        this.createdOn=job.getCreatedOn();
     }
 }
