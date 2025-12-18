@@ -14,7 +14,7 @@ const DETAILS_COMPANY = document.getElementById('jobDetailsCompany');
 const DETAILS_CATEGORY = document.getElementById('jobDetailsCategory');
 const DETAILS_DESCRIPTION = document.getElementById('jobDetailsDescription');
 
-// --- UTILITY FUNCTIONS ---
+
 
 /** Ensures a unique visitor ID exists in localStorage for vote tracking */
 function getOrCreateVisitorId() {
@@ -43,7 +43,7 @@ function renderLoadingState() {
     `;
 }
 
-// 🔥 NEW FUNCTION: Updates only the relevant card without reloading the page
+// Updates only the relevant card without reloading the page
 function updateJobCardUI(jobId, jobData) {
     // 1. Locate the job card container using the unique data-job-id attribute
     const jobCard = document.querySelector(`[data-job-id="${jobId}"]`);
@@ -101,7 +101,7 @@ document.querySelector('#add-new-job .btn-secondary').addEventListener('click', 
 
 // --- VOTE ACTION ---
 
-// 🔥 NEW FUNCTION: Handles the vote request and updates only the single job card
+//Handles the vote request and updates only the single job card
 async function handleVote(jobId, voteType) {
     const visitorId = getOrCreateVisitorId();
     const endpoint = `${API_BASE}/jobs/${jobId}/vote`;
@@ -111,7 +111,7 @@ async function handleVote(jobId, voteType) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // CRITICAL: Send the visitor ID for the backend to track the vote
+
                 "X-Visitor-ID": visitorId
             },
             body: JSON.stringify({
@@ -123,7 +123,7 @@ async function handleVote(jobId, voteType) {
             throw new Error(`Server failed to process vote. Status: ${response.status}`);
         }
 
-        // CRITICAL: Parse the single updated Job DTO returned by the server
+        //                                                                                                                                                                       Parse the single updated Job DTO returned by the server
         const updatedJob = await response.json();
 
         // Update the specific job card UI (non-disruptive)
@@ -174,7 +174,7 @@ async function viewJobDetails(jobId) {
     }
 }
 
-// Exposing viewJobDetails globally
+
 window.viewJobDetails = viewJobDetails;
 
 // --- DATA LOADING FUNCTIONS ---
@@ -209,11 +209,13 @@ function loadJobs(page = 0) {
 
     const keyword = document.getElementById("searchInput").value.trim() || null;
     let categoryName = document.getElementById("jobCategory").value.trim() || null;
+    let sortBy = document.getElementById("sortBy").value.trim() || "date";
     const visitorId = getOrCreateVisitorId(); // Get the ID to send
 
     const params = new URLSearchParams();
     params.append("page", page);
     params.append("size", 6);
+    params.append("sortBy", sortBy);
     if (keyword) params.append("keyword", keyword);
     if (categoryName) params.append("categoryName", categoryName);
 
@@ -274,7 +276,7 @@ function renderJobs(jobs) {
     jobs.forEach(job => {
         const categoryName = categoryMap[job.categoryId] || 'Uncategorized';
 
-        // 🔥 CRITICAL: Determine initial button states based on visitorVoteStatus
+        // Determine initial button states based on visitorVoteStatus
         // The status is passed from the server in the JobDto
         const isLiked = job.visitorVoteStatus === 'LIKE';
         const isDisliked = job.visitorVoteStatus === 'DISLIKE';
@@ -291,7 +293,7 @@ function renderJobs(jobs) {
                         <div class="my-2">
                             <span class="badge bg-info text-dark">${categoryName}</span>
                         </div>
-
+                        <p class="text-muted"></p>
                         <p class="card-text mb-4">
                             ${job.description.substring(0, 150)}${job.description.length > 150 ? '...' : ''}
                         </p>
@@ -387,7 +389,7 @@ document.getElementById("newJobForm").addEventListener("submit", function (e) {
         });
 });
 
-// --- INITIALIZATION ---
+// INITIALIZATION
 
 window.onload = async function () {
     // Generate/Retrieve the visitor ID immediately
