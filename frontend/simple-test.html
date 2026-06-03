@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Finder - Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #2563eb;
+        }
+        .form-group {
+            margin: 10px 0;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 5px;
+        }
+        .job-card {
+            border-left: 4px solid #3b82f6;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success { background: #10b981; color: white; }
+        .status.error { background: #ef4444; color: white; }
+        .status.info { background: #3b82f6; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Job Finder Application - Live Test</h1>
+    
+    <div class="card">
+        <h2>Backend Status</h2>
+        <div id="backend-status" class="status info">Testing...</div>
+        <button class="btn" onclick="testBackend()">Test Backend Connection</button>
+    </div>
+
+    <div class="card">
+        <h2>📝 User Registration</h2>
+        <div class="form-group">
+            <label>First Name:</label>
+            <input type="text" id="firstName" placeholder="Enter first name">
+        </div>
+        <div class="form-group">
+            <label>Last Name:</label>
+            <input type="text" id="lastName" placeholder="Enter last name">
+        </div>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="email" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="Enter password">
+        </div>
+        <div class="form-group">
+            <label>Role:</label>
+            <select id="role">
+                <option value="USER">Job Seeker</option>
+                <option value="COMPANY">Company</option>
+            </select>
+        </div>
+        <div class="form-group" id="companyNameGroup" style="display:none;">
+            <label>Company Name:</label>
+            <input type="text" id="companyName" placeholder="Enter company name">
+        </div>
+        <button class="btn" onclick="registerUser()">Register</button>
+        <div id="register-result"></div>
+    </div>
+
+    <div class="card">
+        <h2>🔐 User Login</h2>
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" id="loginEmail" placeholder="Enter email">
+        </div>
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" id="loginPassword" placeholder="Enter password">
+        </div>
+        <button class="btn" onclick="loginUser()">Login</button>
+        <div id="login-result"></div>
+    </div>
+
+    <div class="card">
+        <h2>💼 Job Categories</h2>
+        <button class="btn" onclick="loadCategories()">Load Categories</button>
+        <div id="categories-list"></div>
+    </div>
+
+    <div class="card">
+        <h2>📋 Available Jobs</h2>
+        <button class="btn" onclick="loadJobs()">Load Jobs</button>
+        <div id="jobs-list"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+        let authToken = null;
+
+        // Show/hide company name field based on role
+        document.getElementById('role').addEventListener('change', function() {
+            const companyGroup = document.getElementById('companyNameGroup');
+            companyGroup.style.display = this.value === 'COMPANY' ? 'block' : 'none';
+        });
+
+        async function testBackend() {
+            const statusDiv = document.getElementById('backend-status');
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+                if (response.ok) {
+                    statusDiv.textContent = '✅ Backend is running successfully!';
+                    statusDiv.className = 'status success';
+                } else {
+                    statusDiv.textContent = '❌ Backend responded with error';
+                    statusDiv.className = 'status error';
+                }
+            } catch (error) {
+                statusDiv.textContent = '❌ Cannot connect to backend';
+                statusDiv.className = 'status error';
+            }
+        }
+
+        async function registerUser() {
+            const userData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value,
+                companyName: document.getElementById('companyName').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('register-result');
+
+                if (response.ok) {
+                    authToken = result.token;
+                    resultDiv.innerHTML = `<div class="status success">✅ Registration successful! Welcome ${result.firstName}!</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ Registration failed: ${result.message || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('register-result').innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loginUser() {
+            const loginData = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('login-result');
+
+                if (response.ok) {
+                    authToken = result.token;
+                    resultDiv.innerHTML = `<div class="status success">✅ Login successful! Welcome back ${result.firstName}!</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="status error">❌ Login failed: ${result.message || 'Invalid credentials'}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('login-result').innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+                const categories = await response.json();
+                
+                const listDiv = document.getElementById('categories-list');
+                listDiv.innerHTML = '<h3>Available Categories:</h3>' + 
+                    categories.map(cat => `<div class="card">📁 ${cat.name}</div>`).join('');
+            } catch (error) {
+                document.getElementById('categories-list').innerHTML = `<div class="status error">❌ Error loading categories</div>`;
+            }
+        }
+
+        async function loadJobs() {
+            try {
+                const headers = { 'X-Visitor-ID': 'test-visitor-123' };
+                const response = await fetch(`${API_BASE}/jobs`, { headers });
+                const jobsData = await response.json();
+                
+                const listDiv = document.getElementById('jobs-list');
+                if (jobsData.content && jobsData.content.length > 0) {
+                    listDiv.innerHTML = '<h3>Available Jobs:</h3>' + 
+                        jobsData.content.map(job => `
+                            <div class="card job-card">
+                                <h4>${job.title}</h4>
+                                <p><strong>Company:</strong> ${job.company}</p>
+                                <p><strong>Description:</strong> ${job.description}</p>
+                                <p><strong>Posted:</strong> ${new Date(job.createdOn).toLocaleDateString()}</p>
+                            </div>
+                        `).join('');
+                } else {
+                    listDiv.innerHTML = '<div class="status info">ℹ️ No jobs available yet. Register as a company and post some jobs!</div>';
+                }
+            } catch (error) {
+                document.getElementById('jobs-list').innerHTML = `<div class="status error">❌ Error loading jobs</div>`;
+            }
+        }
+
+        // Test backend on page load
+        window.onload = function() {
+            testBackend();
+        };
+    </script>
+</body>
+</html>
