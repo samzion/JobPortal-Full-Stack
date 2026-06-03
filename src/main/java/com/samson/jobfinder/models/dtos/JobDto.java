@@ -1,11 +1,13 @@
 package com.samson.jobfinder.models.dtos;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.samson.jobfinder.models.entities.Job;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,24 +21,21 @@ public class JobDto {
     private String description;
     private String company;
     private Integer categoryId;
-    private String visitorVoteStatus;
-    private int likes;
-    private int dislikes;
     private LocalDateTime createdOn;
     private LocalDateTime updatedOn;
 
 
-    public JobDto(Job job, String visitorVoteStatus) {
-        this.id = job.getId();
-        this.title = job.getTitle();
-        this.description = job.getDescription();
-        this.company =  job.getCompany();
-        this.categoryId =  job.getCategory().getId();
-        this.visitorVoteStatus = visitorVoteStatus;
-        this.likes = job.getLikes();
-        this.dislikes = job.getDislikes();
-        this.createdOn=job.getCreatedOn();
-    }
+//    public JobDto(Job job, String visitorVoteStatus) {
+//        this.id = job.getId();
+//        this.title = job.getTitle();
+//        this.description = job.getDescription();
+//        this.company =  job.getCompany();
+//        this.categoryId =  job.getCategory().getId();
+//        this.visitorVoteStatus = visitorVoteStatus;
+//        this.likes = job.getLikes();
+//        this.dislikes = job.getDislikes();
+//        this.createdOn=job.getCreatedOn();
+//    }
 
 
     public JobDto(Job job) {
@@ -47,4 +46,5 @@ public class JobDto {
         this.categoryId =  job.getCategory().getId();
         this.createdOn=job.getCreatedOn();
     }
+
 }

@@ -1,19 +1,19 @@
 package com.samson.jobfinder.services;
 
+import com.samson.jobfinder.exceptions.CategoryNotFoundException;
+import com.samson.jobfinder.exceptions.DuplicateJobException;
+import com.samson.jobfinder.exceptions.InvalidSortException;
+import com.samson.jobfinder.exceptions.JobNotFoundException;
+import com.samson.jobfinder.models.entities.User;
 import com.samson.jobfinder.models.enums.SortBy;
-import com.samson.jobfinder.models.enums.VoteType;
-import com.samson.jobfinder.models.dtos.JobDto;
 import com.samson.jobfinder.models.entities.Job;
 import com.samson.jobfinder.models.entities.JobCategory;
-import com.samson.jobfinder.models.entities.JobVote;
 import com.samson.jobfinder.models.requests.AddNewJobRequest;
+import com.samson.jobfinder.models.responses.AddNewJobResponse;
+import com.samson.jobfinder.models.responses.FetchJobResponse;
 import com.samson.jobfinder.repositories.JobCategoryRepository;
 import com.samson.jobfinder.repositories.JobRepository;
-import com.samson.jobfinder.repositories.JobVoteRepository;
-import jakarta.annotation.Nullable;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
-import lombok.NonNull;
+import com.samson.jobfinder.repositories.JobWithVoteSummaryProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,154 +27,139 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class JobService {
     private final JobRepository jobRepository;
-    private final JobVoteRepository jobVoteRepository;
     private final JobCategoryRepository jobCategoryRepository;
 
-
-    public JobDto addNewJob(AddNewJobRequest request) throws Exception {
-        Job job = new Job();
-        job.setTitle(request.getTitle());
-        job.setDescription(request.getDescription());
-
-        Optional<JobCategory> categoryOptional = jobCategoryRepository.findById(request.getCategoryId());
-        if (categoryOptional.isEmpty()) {
-            throw new IllegalArgumentException("Invalid category parameter");
+    public AddNewJobResponse addNewJob(AddNewJobRequest request, User user) {
+        if (jobRepository.existsByTitleAndCompany(
+                request.getTitle(), request.getCompany())) {
+            throw new DuplicateJobException();
         }
 
-        job.setCategory(categoryOptional.get());
-        job.setCompany(request.getCompany());
-        job = jobRepository.save(job);
+        JobCategory category = jobCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
 
-        return new JobDto(job);
+        Job job = Job.builder()
+                .title(request.getTitle())
+                .description(request.getDescription())
+                .company(request.getCompany())
+                .location(request.getLocation())
+                .salaryRange(request.getSalaryRange())
+                .category(category)
+                .postedBy(user)
+                .build();
+
+        return new AddNewJobResponse(jobRepository.save(job));
     }
 
-
-    // 🔥 PAGINATED FETCH
-    public Page<JobDto> fetchJobs(Pageable pageable) {
-        return jobRepository.findAll(pageable)
-                .map(job -> new JobDto(job));
-    }
-
-    public Page<JobDto> fetchJobs(
+    public Page<FetchJobResponse> fetchJobs(
             int page,
             int size,
-            @Nullable String sortBy,
-            @Nullable String keyword,
-            @Nullable String categoryName,
-            @Nullable String visitorId
+            String sortBy,
+            String keyword,
+            Integer categoryId,
+            String visitorId,
+            User user
     ) {
-        String safeKeyword = (keyword == null || keyword.isBlank()) ? null : keyword.trim();
-        SortBy safeSortBy; //can only be  date, likes or title
-        Integer categoryId = null;
-        Page<Job> jobsPage;
-        Sort sort = Sort.by("createdOn").descending();
+        SortBy safeSortBy;
 
         try {
-            safeSortBy = (sortBy == null || sortBy.isBlank()) ? SortBy.date : SortBy.valueOf(sortBy.trim());
+            safeSortBy = (sortBy == null || sortBy.isBlank())
+                    ? SortBy.CREATED_ON
+                    : SortBy.valueOf(sortBy.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Invalid sortBy value: " + sortBy, e);
+            throw new InvalidSortException(sortBy);
         }
 
-
-        if (categoryName != null && !categoryName.isBlank()) {
-            JobCategory category = jobCategoryRepository.findByNameIgnoreCase(categoryName)
-                    .orElseThrow(() -> new EntityNotFoundException("Category not found: " + categoryName));
-            categoryId = category.getId();
+        if (categoryId != null &&
+                !jobCategoryRepository.existsById(categoryId)) {
+            throw new CategoryNotFoundException(categoryId);
         }
 
+        Sort sort = switch (safeSortBy) {
+            case LIKES -> Sort.by("likes").descending();
+            case TITLE -> Sort.by("title").ascending();
+            default -> Sort.by("createdOn").descending();
+        };
 
-        if (safeSortBy == SortBy.likes){
-            sort = Sort.by("likes").descending();
-        } else if (safeSortBy == SortBy.title) {
-            sort = Sort.by("title").ascending();
-        }
         Pageable pageable = PageRequest.of(page, size, sort);
-        System.out.println("Entering job repository");
-        if (safeKeyword == null && categoryId == null) {
-            jobsPage = jobRepository.findAll(pageable);
-        } else if (safeKeyword == null) {
-            jobsPage = jobRepository.findByCategoryId(categoryId, pageable);
-        } else {
-            jobsPage = jobRepository.searchJobs(safeKeyword, categoryId, pageable);
+
+        // If user is in company mode, show only their jobs
+        if (user != null && user.getRole().name().equals("COMPANY") && user.getIsCompanyMode()) {
+            return jobRepository.findJobsByPostedBy(user.getId(), keyword, categoryId, pageable)
+                    .map(this::mapJobToResponse);
         }
-        return jobsPage.map(job -> this.mapJobToDtoWithVoteStatus(job, visitorId));
+
+        return jobRepository
+                .searchJobsWithFilters(keyword, categoryId, visitorId, pageable)
+                .map(this::map);
     }
 
-    private JobDto mapJobToDtoWithVoteStatus(Job job, @Nullable String visitorId) {
-        String visitorVoteStatus = null;
-
-        if (visitorId != null && !visitorId.isBlank()) {
-            Optional<JobVote> voteOptional = jobVoteRepository.findByJob_IdAndVisitorId(job.getId(), visitorId);
-
-            // e.g., "LIKE", "DISLIKE"
-            visitorVoteStatus = voteOptional.map(jobVote -> jobVote.getVoteType().name()).orElse(null); // No vote status
-        }
-        return new JobDto(job, visitorVoteStatus);
+    public FetchJobResponse getJob(Long jobId, String visitorId, User user) {
+        JobWithVoteSummaryProjection p =
+                Optional.ofNullable(jobRepository.getJobWithVoteSummary(jobId, visitorId))
+                        .orElseThrow(() -> new JobNotFoundException(jobId));
+        return new FetchJobResponse(p);
     }
 
-    @Transactional
-    public JobDto handleVoteAction(Long jobId, String visitorId, VoteType intendedVoteType) {
-
-        // 1. Fetch Job and existing Vote (or create a placeholder for a first-time voter)
+    public FetchJobResponse updateJob(Long jobId, AddNewJobRequest request, User user) {
         Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new EntityNotFoundException("Job not found."));
+                .orElseThrow(() -> new JobNotFoundException(jobId));
 
-        // Use the corrected repository method (JobVoteRepository must return Optional)
-        Job finalJob = job;
-        JobVote vote = jobVoteRepository.findByJob_IdAndVisitorId(jobId, visitorId)
-                // orElseGet: If vote doesn't exist, create a new transient record starting at NONE.
-                .orElseGet(() -> new JobVote(null, finalJob, visitorId, VoteType.NONE));
-
-        VoteType currentVoteType = vote.getVoteType();
-        VoteType newVoteType;
-
-        // 2. CORE VOTING LOGIC: Determine the final state
-        if (intendedVoteType == currentVoteType) {
-            // SCENARIO 1: UNDO (Clicking the same button twice)
-            newVoteType = VoteType.NONE;
-
-        } else {
-            // SCENARIO 2 & 3: NEW VOTE (from NONE) or SWITCH VOTE (from opposite)
-            newVoteType = intendedVoteType;
+        if (!job.getPostedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("You can only update your own jobs");
         }
 
-        // 3. APPLY COUNTER CHANGES (Using Entity Helper Methods)
+        JobCategory category = jobCategoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new CategoryNotFoundException(request.getCategoryId()));
 
-        // Step A: Undo the old vote (if any)
-        if (currentVoteType == VoteType.LIKE) {
-            job.decrementLikes();
-        } else if (currentVoteType == VoteType.DISLIKE) {
-            job.decrementDislikes();
-        }
+        job.setTitle(request.getTitle());
+        job.setDescription(request.getDescription());
+        job.setCompany(request.getCompany());
+        job.setLocation(request.getLocation());
+        job.setSalaryRange(request.getSalaryRange());
+        job.setCategory(category);
 
-        // Step B: Apply the new vote (if not NONE)
-        if (newVoteType == VoteType.LIKE) {
-            job.incrementLikes();
-        } else if (newVoteType == VoteType.DISLIKE) {
-            job.incrementDislikes();
-        }
-        //
-
-        // 4. Save/Delete Vote Record
-        vote.setVoteType(newVoteType);
-
-        if (newVoteType == VoteType.NONE && vote.getId() != null) {
-            // Delete record if the user retracts the vote
-            jobVoteRepository.delete(vote);
-        } else if (newVoteType != VoteType.NONE) {
-            // Save/Update the vote record
-            jobVoteRepository.save(vote);
-        }
-
-        job = jobRepository.save(job);
-        String updatedStatus = (newVoteType == VoteType.NONE) ? null : newVoteType.name();
-
-        return new JobDto(job, updatedStatus);
+        Job savedJob = jobRepository.save(job);
+        return mapJobToResponse(savedJob);
     }
 
-    public JobDto getJob(@NonNull Long jobId) {
-        Job job =  jobRepository.findById(jobId).get();
-        return new JobDto(job);
+    public void deleteJob(Long jobId, User user) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new JobNotFoundException(jobId));
 
+        if (!job.getPostedBy().getId().equals(user.getId())) {
+            throw new RuntimeException("You can only delete your own jobs");
+        }
+
+        jobRepository.delete(job);
+    }
+
+    private FetchJobResponse mapJobToResponse(Job job) {
+        FetchJobResponse response = new FetchJobResponse();
+        response.setId(job.getId());
+        response.setTitle(job.getTitle());
+        response.setDescription(job.getDescription());
+        response.setCompany(job.getCompany());
+        response.setLocation(job.getLocation());
+        response.setSalaryRange(job.getSalaryRange());
+        response.setCategoryId(job.getCategory().getId().longValue());
+        response.setCategoryName(job.getCategory().getName());
+        response.setCreatedOn(job.getCreatedOn());
+        response.setUpdatedOn(job.getUpdatedOn());
+        return response;
+    }
+
+    public FetchJobResponse map(JobWithVoteSummaryProjection p) {
+        FetchJobResponse fetchJobResponse = new FetchJobResponse();
+        fetchJobResponse.setId(p.getJobId());
+        fetchJobResponse.setTitle(p.getTitle());
+        fetchJobResponse.setDescription(p.getDescription());
+        fetchJobResponse.setCategoryId(p.getCategoryId());
+        fetchJobResponse.setLikes(p.getLikes());
+        fetchJobResponse.setDislikes(p.getDislikes());
+        fetchJobResponse.setVisitorVoteType(p.getVisitorVoteType());
+        fetchJobResponse.setCreatedOn(p.getCreatedOn());
+        fetchJobResponse.setCompany(p.getCompany());
+        return fetchJobResponse;
     }
 }

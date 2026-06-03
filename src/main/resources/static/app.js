@@ -121,7 +121,7 @@ function updateJobCardUI(jobId, jobData) {
 
     const likeBtn = jobCard.querySelector('.vote-btn[data-vote-type="LIKE"]');
     const dislikeBtn = jobCard.querySelector('.vote-btn[data-vote-type="DISLIKE"]');
-    const status = jobData.visitorVoteStatus;
+    const status = jobData.visitorVoteType;
 
     if (likeBtn) {
         likeBtn.innerHTML = `<i class="bi bi-hand-thumbs-up"></i> ${jobData.likes}`;
@@ -166,8 +166,8 @@ async function loadCategories() {
 
         categories.forEach(c => {
             categoryMap[c.id] = c.name;
-            d1.appendChild(new Option(c.name, c.name));
-            d2.appendChild(new Option(c.name, c.name));
+            d1.appendChild(new Option(c.name, c.id));
+            d2.appendChild(new Option(c.name, c.id));
         });
     } catch (err) { console.error("Category load error", err); }
 }
@@ -176,11 +176,11 @@ function loadJobs(page = 0) {
     renderLoadingState();
     const keyword = document.getElementById("searchInput").value.trim();
     const category = document.getElementById("jobCategory").value;
-    const sortBy = document.getElementById("sortBy").value || "date";
+    const sortBy = document.getElementById("sortBy").value || "";
 
     const params = new URLSearchParams({ page, size: 6, sortBy });
     if (keyword) params.append("keyword", keyword);
-    if (category) params.append("categoryName", category);
+    if (category) params.append("categoryId", category);
 
     fetch(`${API_BASE}/jobs?${params.toString()}`, {
         headers: { 'X-Visitor-ID': getOrCreateVisitorId() }
@@ -203,9 +203,9 @@ function renderJobs(jobs) {
     JOB_LIST_CONTAINER.innerHTML = jobs.length ? "" : `<div class="alert alert-info w-100">No jobs found.</div>`;
 
     jobs.forEach(job => {
-        const isLiked = job.visitorVoteStatus === 'LIKE';
-        const isDisliked = job.visitorVoteStatus === 'DISLIKE';
-
+        const isLiked = job.visitorVoteType === 'LIKE';
+        const isDisliked = job.visitorVoteType === 'DISLIKE';
+        console.log(`${isLiked}, ${isDisliked}`);
         const html = `
         <div class="col" data-job-id="${job.id}">
             <div class="card shadow-sm h-100 job-card"> <div class="card-body d-flex flex-column">

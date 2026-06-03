@@ -2,6 +2,7 @@ package com.samson.jobfinder.controllers;
 
 import com.samson.jobfinder.models.entities.JobCategory;
 import com.samson.jobfinder.repositories.JobCategoryRepository;
+import com.samson.jobfinder.services.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,11 +16,11 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class JobCategoryController {
 
-    private final JobCategoryRepository jobCategoryRepository;
+    private final CategoryService categoryService;
 
     @GetMapping("/categories")
     @CrossOrigin(origins = "*")
     public List<JobCategory> getAllCategories() {
-        return jobCategoryRepository.findAll();
+        return categoryService.getAllCategories();
     }
 }

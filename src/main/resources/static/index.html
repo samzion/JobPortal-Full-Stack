@@ -33,7 +33,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="#">JobSearch Pro</a>
+        <a class="navbar-brand" href="index.html">JobSearch Pro</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -85,9 +85,14 @@
             <div class="col-md-3">
                 <select id="sortBy" class="form-select">
                     <option value="">Sort By</option>
-                    <option value="date">date</option>
-                    <option value="likes">likes</option>
-                    <option value="title">title</option>
+                    <option value="DATE_DESC">date (descending)</option>
+                    <option value="DATE_ASC">date (ascending)</option>
+                    <option value="LIKES_ASC">likes (ascending)</option>
+                    <option value="LIKES_DESC">likes (descending)</option>
+                    <option value="DISLIKES_ASC">dislikes (ascending)</option>
+                    <option value="DISLIKES_DESC">dislikes (descending)</option>
+                    <option value="TITLE_ASC">title (ascending)</option>
+                    <option value="TITLE_DESC">title (descending)</option>
                 </select>
             </div>
 
@@ -186,7 +191,16 @@
     </div>
 </footer>
 
-<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+
+
+
+
+
+
+
+
+<div class="toast -containe
+r position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
     <div id="statusToast" class="toast align-items-center text-white border-0" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
             <div id="toastMessage" class="toast-body">

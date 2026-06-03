@@ -1,71 +1,106 @@
 package com.samson.jobfinder.controllers;
 
-import com.samson.jobfinder.models.dtos.JobDto;
+import com.samson.jobfinder.models.entities.User;
 import com.samson.jobfinder.models.requests.AddNewJobRequest;
 import com.samson.jobfinder.models.requests.VoteRequest;
+import com.samson.jobfinder.models.responses.AddNewJobResponse;
+import com.samson.jobfinder.models.responses.FetchJobResponse;
 import com.samson.jobfinder.services.JobService;
+import com.samson.jobfinder.services.JobVoteService;
+import com.samson.jobfinder.services.UserService;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/jobs")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
+@Validated
 @Slf4j
 public class JobController {
 
     private final JobService jobService;
+    private final JobVoteService jobVoteService;
+    private final UserService userService;
 
     @PostMapping
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<JobDto> addNewJob(@RequestBody AddNewJobRequest request) throws Exception {
+    public ResponseEntity<AddNewJobResponse> addNewJob(
+            @RequestBody AddNewJobRequest request,
+            Authentication authentication) throws Exception {
         log.trace("Inside JobController addNewJob");
-        return ResponseEntity.ok(jobService.addNewJob(request));
+        User user = userService.getCurrentUser(authentication.getName());
+        AddNewJobResponse response = jobService.addNewJob(request, user);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping
-    @CrossOrigin(origins = "*")
-    public Page<JobDto> fetchJobs(
+    public Page<FetchJobResponse> fetchJobs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) String sortBy,
-            @RequestHeader("X-Visitor-ID") String visitorId
-    ) {
-        System.out.println("Keyword value = " + keyword);
-        //System.out.println("Keyword class = " + keyword.getClass().getName());
-        return jobService.fetchJobs(page, size, sortBy, keyword, categoryName, visitorId);
+            @RequestHeader(value = "X-Visitor-ID", required = false) String visitorId,
+            Authentication authentication) {
+        
+        User user = null;
+        if (authentication != null) {
+            user = userService.getCurrentUser(authentication.getName());
+        }
+        
+        return jobService.fetchJobs(page, size, sortBy, keyword, categoryId, visitorId, user);
     }
 
-    @GetMapping ("{jobId}")
-    @CrossOrigin(origins = "*")
-    public  ResponseEntity<?> getJob(
+    @GetMapping("{jobId}")
+    public ResponseEntity<FetchJobResponse> getJob(
+            @PathVariable @Positive Long jobId,
+            @RequestHeader(value = "X-Visitor-ID", required = false) String visitorId,
+            Authentication authentication) {
+        
+        User user = null;
+        if (authentication != null) {
+            user = userService.getCurrentUser(authentication.getName());
+        }
+        
+        FetchJobResponse jobResponse = jobService.getJob(jobId, visitorId, user);
+        return ResponseEntity.ok(jobResponse);
+    }
+
+    @PutMapping("{jobId}")
+    public ResponseEntity<FetchJobResponse> updateJob(
             @PathVariable Long jobId,
-            @RequestHeader("X-Visitor-ID") String visitorId){
-        JobDto updatedJobDto =jobService.getJob(jobId);
-        return ResponseEntity.ok(updatedJobDto);
+            @RequestBody AddNewJobRequest request,
+            Authentication authentication) {
+        
+        User user = userService.getCurrentUser(authentication.getName());
+        FetchJobResponse response = jobService.updateJob(jobId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("{jobId}")
+    public ResponseEntity<String> deleteJob(
+            @PathVariable Long jobId,
+            Authentication authentication) {
+        
+        User user = userService.getCurrentUser(authentication.getName());
+        jobService.deleteJob(jobId, user);
+        return ResponseEntity.ok("Job deleted successfully");
     }
 
     @PostMapping("{jobId}/vote")
-    @CrossOrigin(origins = "*")
-    public ResponseEntity<JobDto> handleVoteAction(
+    public ResponseEntity<FetchJobResponse> handleVoteAction(
             @PathVariable Long jobId,
-            @RequestHeader("X-Visitor-ID") String visitorId,
-            @RequestBody @Validated VoteRequest request)
-    {
+            @RequestHeader(value = "X-Visitor-ID", required = false) String visitorId,
+            @RequestBody @Validated VoteRequest request) {
 
-        JobDto updatedJobDto =jobService.handleVoteAction(jobId, visitorId, request.getVoteType());
-
-
-        return ResponseEntity.ok(updatedJobDto);
+        FetchJobResponse updatedJobWithVote = jobVoteService.handleVoteAction(jobId, visitorId, request.getVoteType());
+        return ResponseEntity.ok(updatedJobWithVote);
     }
 }
 

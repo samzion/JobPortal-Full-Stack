@@ -2,19 +2,19 @@ package com.samson.jobfinder.models.requests;
 
 import lombok.*;
 
-
 @Data
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddNewJobRequest {
-    public String company;
     @NonNull
     private String title;
     @NonNull
     private String description;
+    public String company;
+    private String location;
+    private String salaryRange;
     @NonNull
     private Integer categoryId;
-
 }

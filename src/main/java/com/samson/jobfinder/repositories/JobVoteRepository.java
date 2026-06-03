@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface JobVoteRepository extends JpaRepository<JobVote, Long> {
-    Optional<JobVote> findByJob_IdAndVisitorId(Long jobId, String visitorId);
-    int countByJob_IdAndVoteType(Long jobId, VoteType voteType);
+    Optional<JobVote> findByJobIdAndVisitorId(Long jobId, String visitorId);
+    int countByJobIdAndVoteType(Long jobId, VoteType voteType);
 }

@@ -28,41 +28,25 @@ public class Job {
     @Column(name="company",columnDefinition = "varchar(100)")
     private String company;
 
+    @Column(name="location")
+    private String location;
+
+    @Column(name="salary_range")
+    private String salaryRange;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private JobCategory category;
 
-    @Column(name= "likes", nullable = false)
-    private int likes = 0; // Initialize
-
-    @Column(name= "dislikes", nullable = false)
-    private int dislikes = 0; // Initialize
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "posted_by", nullable = false)
+    private User postedBy;
 
     @Column(name= "created_on", nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdOn;
 
     @Column(name= "updated_on", nullable = false)
-    @UpdateTimestamp // Update automatically on every save/flush
+    @UpdateTimestamp
     private LocalDateTime updatedOn;
-
-    public void incrementLikes() {
-        this.likes++;
-    }
-
-    public void decrementLikes() {
-        if (this.likes > 0) {
-            this.likes--;
-        }
-    }
-
-    public void incrementDislikes() {
-        this.dislikes++;
-    }
-
-    public void decrementDislikes() {
-        if (this.dislikes > 0) {
-            this.dislikes--;
-        }
-    }
 }

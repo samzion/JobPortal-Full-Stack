@@ -6,6 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
@@ -20,9 +24,9 @@ public class JobVote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     // Many votes belong to one job
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = false)
-    private Job job;
+
+    @Column(name = "job_id", nullable = false)
+    private Long jobId;
 
     @Column(name = "visitor_id", nullable = false)
     private String visitorId;
@@ -31,5 +35,11 @@ public class JobVote {
     @Enumerated(EnumType.STRING)
     private VoteType voteType;
 
+    @Column(name= "created_on", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdOn;
 
+    @Column(name= "updated_on", nullable = false)
+    @UpdateTimestamp // Update automatically on every save/flush
+    private LocalDateTime updatedOn;
 }
