@@ -10,5 +10,11 @@
     <include file="003-create-job_votes-table.sql" relativeToChangelogFile="true"/>
     <include file="004-insert-job-categories.sql" relativeToChangelogFile="true"/>
     <include file="005-insert-jobs.sql" relativeToChangelogFile="true"/>
-
+    <include file="006-add-likes-dislikes-columns-to-jobs.sql" relativeToChangelogFile="true"/>
+    <include file="007-add-constraint-to-jobs.sql" relativeToChangelogFile="true"/>
+    <include file="008-drop-likes-dislikes-columns-from-jobs.sql" relativeToChangelogFile="true"/>
+    <include file="009-add-created_and_updated-time-columns-to-job_votes.sql" relativeToChangelogFile="true"/>
+    <include file="010-create-users-table.sql" relativeToChangelogFile="true"/>
+    <include file="011-add-user-to-jobs.sql" relativeToChangelogFile="true"/>
+    <include file="012-create-job-applications-table.sql" relativeToChangelogFile="true"/>
 </databaseChangeLog>

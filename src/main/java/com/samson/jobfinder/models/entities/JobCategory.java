@@ -25,5 +25,6 @@ public class JobCategory {
     // One category has many jobs
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = false)
     @JsonIgnore
+    @Builder.Default
     private List<Job> jobs = new ArrayList<>();
 }

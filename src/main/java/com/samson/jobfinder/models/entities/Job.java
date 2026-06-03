@@ -2,6 +2,8 @@ package com.samson.jobfinder.models.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -26,12 +28,25 @@ public class Job {
     @Column(name="company",columnDefinition = "varchar(100)")
     private String company;
 
+    @Column(name="location")
+    private String location;
+
+    @Column(name="salary_range")
+    private String salaryRange;
+
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private JobCategory category;
 
-    @Column(name= "created_on")
-    private LocalDateTime createOn;
-    @Column(name= "updated_on")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "posted_by", nullable = false)
+    private User postedBy;
+
+    @Column(name= "created_on", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdOn;
+
+    @Column(name= "updated_on", nullable = false)
+    @UpdateTimestamp
     private LocalDateTime updatedOn;
 }

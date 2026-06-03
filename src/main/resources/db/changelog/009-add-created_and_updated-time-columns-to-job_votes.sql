@@ -1,0 +1,7 @@
+
+--liquibase formatted sql
+--changeset samson.kayode:009
+
+ALTER TABLE job_votes
+ADD COLUMN  created_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN  updated_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
